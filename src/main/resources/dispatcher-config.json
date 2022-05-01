@@ -3,7 +3,8 @@
   "dispatchers": [
     {
       "resourceURI": "resource/.*",
-      "dispatcher": "in.vadlakonda.equilibrium.dispatch.ResourceDispatcher"
+      "dispatcher": "in.vadlakonda.equilibrium.dispatch.ResourceDispatcher",
+      "resourceRoot": "dashboard/"
     },
     {
       "resourceURI": "api/.*",

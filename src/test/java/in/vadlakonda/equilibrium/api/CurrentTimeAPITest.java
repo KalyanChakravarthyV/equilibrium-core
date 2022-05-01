@@ -35,7 +35,9 @@ class CurrentTimeAPITest {
 
         when(response.getWriter()).thenReturn(writer);
 
-        RequestDispatcher dispatcher =  RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json").getRequestDispatcher(request);
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+
+        RequestDispatcher dispatcher =  RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json",currentClassLoader).getRequestDispatcher(request);
 
         dispatcher.dispatch(request,response,Thread.currentThread().getContextClassLoader());
 

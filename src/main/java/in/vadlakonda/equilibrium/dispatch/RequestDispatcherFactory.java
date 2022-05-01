@@ -28,7 +28,7 @@ public class RequestDispatcherFactory {
     private static RequestDispatcherFactory requestDispatcherFactory = new RequestDispatcherFactory();
 
 
-    public static RequestDispatcherFactory getRequestDispatcherFactory(String dispatchConfigJsonFile) {
+    public static RequestDispatcherFactory getRequestDispatcherFactory(String dispatchConfigJsonFile, ClassLoader classLoader) {
 
         if (dispatcherConfig != null && !dispatcherConfig.getDispatchers().isEmpty()) return requestDispatcherFactory;
 
@@ -36,7 +36,7 @@ public class RequestDispatcherFactory {
         Gson gson = new Gson();
 
         Reader reader = null;
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(dispatchConfigJsonFile);
+        InputStream inputStream = classLoader.getResourceAsStream(dispatchConfigJsonFile);
 
         if (inputStream == null) {
             log.error("Could not read:" + dispatchConfigJsonFile);

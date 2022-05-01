@@ -9,6 +9,8 @@ public class Dispatcher {
     private String dispatcher;
     private String configFile;
 
+    private String resourceRoot;
+
     private RequestDispatcher requestDispatcher;
     private DispatcherConfig dispatcherConfig;
 
@@ -51,5 +53,13 @@ public class Dispatcher {
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
+    }
+
+    public String getResourceRoot() {
+        return resourceRoot;
+    }
+
+    public void setResourceRoot(String resourceRoot) {
+        this.resourceRoot = resourceRoot;
     }
 }
