@@ -1,0 +1,18 @@
+{
+  "baseURI": "/html/en/default/rest/Equilibrium/api",
+  "apis": [
+    {
+      "apiOperation": "/explorer",
+      "apiClass": "in.vadlakonda.equilibrium.api.CurrentTimeAPI"
+    },
+    {
+      "apiOperation": "/dataExport",
+      "apiClass": "in.vadlakonda.equilibrium.api.DatabaseOperationsAPI"
+    },
+
+    {
+      "apiOperation": "/currentTime",
+      "apiClass": "in.vadlakonda.equilibrium.api.CurrentTimeAPI"
+    }
+  ]
+}
