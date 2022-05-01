@@ -9,20 +9,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class APIDispatcher implements RequestDispatcher{
+public class APIDispatcher implements RequestDispatcher {
 
     private Dispatcher dispatcher;
 
     private EquilibriumAPIFactory equilibriumAPIFactory;
-    public APIDispatcher(Dispatcher dispatcher){
+
+    public APIDispatcher(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
-        equilibriumAPIFactory = EquilibriumAPIFactory.getEquilibriumAPIFactory(dispatcher.getConfigFile());
     }
+
     @Override
-    public void dispatch(HttpServletRequest request, HttpServletResponse response,ClassLoader classLoader) throws ServletException, IOException {
+    public void dispatch(HttpServletRequest request, HttpServletResponse response, ClassLoader classLoader) throws ServletException, IOException {
 
         try {
-            equilibriumAPIFactory.getEquilibriumAPI(request).execute(request,response,classLoader);
+            if (equilibriumAPIFactory == null)
+                equilibriumAPIFactory = EquilibriumAPIFactory.getEquilibriumAPIFactory(dispatcher.getConfigFile(), classLoader);
+
+            equilibriumAPIFactory.getEquilibriumAPI(request).execute(request, response, classLoader);
         } catch (APIException e) {
             response.setStatus(e.getStatusCode());
             response.getWriter().print(e.getMessage());

@@ -6,6 +6,11 @@ import in.vadlakonda.equilibrium.api.config.APIConfig;
 import in.vadlakonda.equilibrium.api.request.Payload;
 import in.vadlakonda.equilibrium.dispatch.RequestDispatcherFactory;
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +18,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.util.StringTokenizer;
 
 public class DatabaseOperationsAPI implements EquilibriumAPI {
 
@@ -25,21 +32,67 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
         BufferedReader bufferedReader = null;
 
         try {
-            BufferedReader reader  = request.getReader();
-            if (reader != null) {
-                Gson gson = new Gson();
+//            BufferedReader reader  = request.getReader();
+//            if (reader != null) {
+//                Gson gson = new Gson();
 
-                Payload payload = gson.fromJson(reader, Payload.class);
-
-
-                response.getWriter().print(gson.toJson(payload));
+//                Payload payload = gson.fromJson(reader, Payload.class);
 
 
-            } else {
-                log.error("No input stream found!");
+            String queryBody = request.getParameter("body");
+
+
+            StringTokenizer queryTokenizer = new StringTokenizer(queryBody, ";");
+
+            Workbook workbook = new XSSFWorkbook();
+            CreationHelper createHelper = workbook.getCreationHelper();
+
+            while (queryTokenizer.hasMoreTokens()) {
+                String nextToken = queryTokenizer.nextToken();
+
+                StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
+
+                String queryName = queryNameTokenizer.nextToken();
+
+                String query = queryNameTokenizer.nextToken();
+
+                log.info(String.format("%s:%s", queryName, query));
+
+                Sheet workSheet = getSheetWithData(query, queryName, workbook);
+
+                workSheet.createRow(1).createCell(1).setCellValue(query);
             }
-        } catch (IOException ex) {
-            throw new APIException(500, ex.getMessage());
+
+            response.setContentType("application/vnd.ms-excel");
+
+
+            response.addHeader("Content-disposition", "attachment;filename=DataExport");
+
+            workbook.write(response.getOutputStream());
+
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
     }
+
+    private Sheet getSheetWithData(String query, String sheetName, Workbook workbook) {
+
+        Connection connection = getConnection();
+
+        Sheet sheet = workbook.createSheet(sheetName);
+
+        return sheet;
+
+
+
+    }
+
+    private Connection getConnection() {
+
+        return null;
+
+    }
+
 }

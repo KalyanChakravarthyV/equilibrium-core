@@ -26,7 +26,7 @@ public class EquilibriumAPIFactory {
 
     private static EquilibriumAPIFactory equilibriumAPIFactory = new EquilibriumAPIFactory();
 
-    public static EquilibriumAPIFactory getEquilibriumAPIFactory(String apiConfigJsonFile) {
+    public static EquilibriumAPIFactory getEquilibriumAPIFactory(String apiConfigJsonFile, ClassLoader classLoader) {
 
         if (apiConfig != null && !apiConfig.getApis().isEmpty()) return equilibriumAPIFactory;
 
@@ -34,7 +34,7 @@ public class EquilibriumAPIFactory {
         Gson gson = new Gson();
 
         Reader reader = null;
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(apiConfigJsonFile);
+        InputStream inputStream = classLoader.getResourceAsStream(apiConfigJsonFile);
 
         if (inputStream == null) {
             log.error("Could not read:" + apiConfigJsonFile);

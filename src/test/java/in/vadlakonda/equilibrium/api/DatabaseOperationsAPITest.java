@@ -30,16 +30,19 @@ class DatabaseOperationsAPITest {
         BufferedReader stringReader = new BufferedReader(new StringReader(requestPayload));
 
 
-        when(request.getReader()).thenReturn(stringReader);
+        when(request.getParameter("body")).thenReturn("q1:query1;q2:query2");
+//        when(request.getReader()).thenReturn(stringReader);
 
         StringWriter out = new StringWriter();
         PrintWriter writer = new PrintWriter(out);
 
         when(response.getWriter()).thenReturn(writer);
 
-        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json").getRequestDispatcher(request);
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 
-        dispatcher.dispatch(request, response, Thread.currentThread().getContextClassLoader());
+        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json",currentClassLoader).getRequestDispatcher(request);
+
+        dispatcher.dispatch(request, response,currentClassLoader);
         log.info(out.getBuffer());
 
 

@@ -1,6 +1,5 @@
-import in.vadlakonda.equilibrium.dispatch.APIDispatcher;
-import in.vadlakonda.equilibrium.dispatch.ErrorResponseDispatcher;
-import in.vadlakonda.equilibrium.dispatch.RequestDispatcherFactory;
+package in.vadlakonda.equilibrium.dispatch;
+
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -38,13 +37,15 @@ class RequestDispatcherFactoryTest {
     @Order(1)
     void getRequestDispatcherFactory() {
 
-        assertNotNull((this.factory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json")));
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+
+        assertNotNull((this.factory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", currentClassLoader)));
     }
 
     @Order(2)
     @ParameterizedTest
     @ValueSource(strings = {"/html/en/default/rest/Equilibrium/api/dataExport", "/html/en/default/rest/Equilibrium/api/runKts",
-            "/html/en/default/rest/Equilibrium/api/processBuilder","/html/en/default/rest/Equilibrium/api/currentTime"})
+            "/html/en/default/rest/Equilibrium/api/processBuilder", "/html/en/default/rest/Equilibrium/api/currentTime"})
     void getAPIRequestDispatcher(String uri) {
 
         assertNotNull(this.factory);
@@ -54,14 +55,13 @@ class RequestDispatcherFactoryTest {
     }
 
 
-
     @Order(3)
     @ParameterizedTest
     @ValueSource(strings = {"/something", "/html/en/default/rest/Equilibrium/somethingElse",
             "/html/en/default/rest/Equilibrium/res/Test"})
     void getErrorResponseDispatcher(String uri) {
 
-        log.info("Testing against:"+uri);
+        log.info("Testing against:" + uri);
         assertNotNull(this.factory);
         when(request.getRequestURI()).thenReturn(uri);
 
