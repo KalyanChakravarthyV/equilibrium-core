@@ -63,7 +63,7 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
             response.setContentType("application/vnd.ms-excel");
 
 
-            response.addHeader("Content-disposition", "attachment;filename=DataExport");
+            response.addHeader("Content-disposition", "attachment;filename=DataExport.xlsx");
 
             workbook.write(response.getOutputStream());
 
@@ -100,6 +100,8 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
             while (resultSet.next()) {
                 XSSFRow sheetRow = (XSSFRow) workSheet.createRow(rowNum++);
+                col = 0;
+
                 while (col < colCount) {
                     Cell cell = sheetRow.createCell(col);
                     cell.setCellValue(resultSet.getString(col + 1));
