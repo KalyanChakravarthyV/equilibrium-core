@@ -100,13 +100,11 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
             while (resultSet.next()) {
                 XSSFRow sheetRow = (XSSFRow) workSheet.createRow(rowNum++);
-                col = 0;
                 while (col < colCount) {
                     Cell cell = sheetRow.createCell(col);
                     cell.setCellValue(resultSet.getString(col + 1));
                     col++;
                 }
-
             }
         } catch (SQLException e) {
             throw new APIException(500, e.getMessage());
