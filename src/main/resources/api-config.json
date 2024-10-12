@@ -9,7 +9,6 @@
       "apiOperation": "dataExport",
       "apiClass": "in.vadlakonda.equilibrium.api.DatabaseOperationsAPI"
     },
-
     {
       "apiOperation": "currentTime",
       "apiClass": "in.vadlakonda.equilibrium.api.CurrentTimeAPI"

@@ -20,11 +20,8 @@ public class RequestDispatcherFactory {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(RequestDispatcherFactory.class);
     private static final String ERROR_RESPONSE = "ERROR_RESPONSE";
-
-    private static DispatcherConfig dispatcherConfig = null;
-
     private static final HashMap<String, RequestDispatcher> URI_DISPATCHER_MAP = new HashMap<String, RequestDispatcher>();
-
+    private static DispatcherConfig dispatcherConfig = null;
     private static RequestDispatcherFactory requestDispatcherFactory = new RequestDispatcherFactory();
 
 
@@ -92,9 +89,9 @@ public class RequestDispatcherFactory {
 
         String matchedResourceURI = URI_DISPATCHER_MAP.keySet().stream().filter(e -> resourceURI.matches(e)).findFirst().orElse(ERROR_RESPONSE);
 
-        log.info(String.format("Resource URI[%s] - Matches:%s",resourceURI, matchedResourceURI));
+        log.info(String.format("Resource URI[%s] - Matches:%s", resourceURI, matchedResourceURI));
 
-        if(matchedResourceURI == null)
+        if (matchedResourceURI == null)
             return URI_DISPATCHER_MAP.get(ERROR_RESPONSE);
 
         return URI_DISPATCHER_MAP.get(matchedResourceURI);

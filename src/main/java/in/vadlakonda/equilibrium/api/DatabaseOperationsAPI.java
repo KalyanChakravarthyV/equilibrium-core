@@ -1,8 +1,9 @@
 package in.vadlakonda.equilibrium.api;
 
+import com.google.gson.Gson;
+import in.vadlakonda.equilibrium.api.request.Payload;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -10,63 +11,71 @@ import javax.naming.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class DatabaseOperationsAPI implements EquilibriumAPI {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(DatabaseOperationsAPI.class);
+    private static final String SQL_SHEET_NAME = "SQL Queries";
+
+    public static Map toMap(Context ctx) throws NamingException {
+        String namespace = ctx instanceof InitialContext ? ctx.getNameInNamespace() : "";
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        log.info("> Listing namespace: " + namespace);
+        NamingEnumeration<NameClassPair> list = ctx.list(namespace);
+        while (list.hasMoreElements()) {
+            NameClassPair next = list.next();
+            String name = next.getName();
+            String jndiPath = namespace + name;
+            Object lookup;
+            try {
+                log.info("> Looking up name: " + jndiPath);
+                Object tmp = ctx.lookup(jndiPath);
+                if (tmp instanceof Context) {
+                    lookup = toMap((Context) tmp);
+                } else {
+                    lookup = tmp.toString();
+                }
+            } catch (Throwable t) {
+                lookup = t.getMessage();
+            }
+            map.put(name, lookup);
+
+        }
+        return map;
+    }
 
     @Override
     public void execute(HttpServletRequest request, HttpServletResponse response, ClassLoader classLoader) throws APIException {
 
 
         BufferedReader bufferedReader = null;
-
+        Payload payload = null;
         try {
-//            BufferedReader reader  = request.getReader();
-//            if (reader != null) {
-//                Gson gson = new Gson();
+            BufferedReader reader = request.getReader();
+            if (reader != null) {
+                Gson gson = new Gson();
 
-//                Payload payload = gson.fromJson(reader, Payload.class);
-
-
-            String queryBody = request.getParameter("body");
+                payload = gson.fromJson(reader, Payload.class);
 
 
-            StringTokenizer queryTokenizer = new StringTokenizer(queryBody, ";");
-
-            Workbook workbook = new XSSFWorkbook();
-            CreationHelper createHelper = workbook.getCreationHelper();
-
-            while (queryTokenizer.hasMoreTokens()) {
-                String nextToken = queryTokenizer.nextToken();
-
-                StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
-
-                String queryName = queryNameTokenizer.nextToken();
-
-                String query = queryNameTokenizer.nextToken();
-
-                log.info(String.format("%s:%s", queryName, query));
-
-                Sheet sheet = workbook.createSheet(queryName);
-
-                fillSheetWithData(sheet, query);
-
-
+            } else {
+                //reader is null
+                throw new APIException(400, "Request body cannot be empty");
             }
 
-            response.setContentType("application/vnd.ms-excel");
+            if (payload == null) {
+                throw new APIException(400, "Request body(payload) cannot be empty");
+            }
 
+            if (payload.getAction().equals("dbExport")) {
+                dbExport(payload, response);
+            } else if (payload.getAction().equals("dbUpdate")) {
+                dbUpdate(payload, response);
 
-            response.addHeader("Content-disposition", "attachment;filename=DataExport.xlsx");
-
-            workbook.write(response.getOutputStream());
-
+            }
 
         } catch (Exception e) {
             log.error("Error occurred", e);
@@ -74,6 +83,106 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         }
 
+    }
+
+    private void dbUpdate(Payload payload, HttpServletResponse response) throws IOException, SQLException, NamingException {
+        String queryBody = payload.getBody();
+
+        response.setContentType("application/json");
+
+        StringBuffer responsetoPrint = new StringBuffer();
+
+        StringTokenizer queryTokenizer = new StringTokenizer(queryBody, ";");
+
+        while (queryTokenizer.hasMoreTokens()) {
+            String nextToken = queryTokenizer.nextToken();
+
+            StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
+
+            String queryName = queryNameTokenizer.nextToken();
+
+            String query = queryNameTokenizer.nextToken();
+
+            String sqlResult = "";
+
+            Connection connection = getConnection();
+            PreparedStatement preparedStatement = null;
+
+            try {
+                preparedStatement = connection.prepareStatement(query);
+                sqlResult = String.valueOf(preparedStatement.execute());
+
+
+                responsetoPrint.append(String.format("{\"%s\":\"%s\"},", queryName, sqlResult));
+                preparedStatement.close();
+
+            } catch (SQLException e) {
+                sqlResult = e.getMessage();
+                responsetoPrint.append(String.format("{\"%s\":\"%s\"},", queryName, sqlResult));
+            }
+
+            connection.close();
+
+        }
+
+        response.getWriter().println(String.format("{\"result\":[%s]}", responsetoPrint));
+
+    }
+
+    private void dbExport(Payload payload, HttpServletResponse response) throws IOException, APIException {
+
+        String queryBody = payload.getBody();
+
+
+        StringTokenizer queryTokenizer = new StringTokenizer(queryBody, ";");
+
+        Workbook workbook = new XSSFWorkbook();
+        CreationHelper createHelper = workbook.getCreationHelper();
+
+        List<String> sqlList = new LinkedList<String>();
+
+        while (queryTokenizer.hasMoreTokens()) {
+            String nextToken = queryTokenizer.nextToken();
+
+            StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
+
+            String queryName = queryNameTokenizer.nextToken();
+
+            String query = queryNameTokenizer.nextToken();
+
+            sqlList.add(nextToken);
+
+            log.info("SQL->"+nextToken);
+
+            Sheet sheet = workbook.createSheet(queryName);
+
+            fillSheetWithData(sheet, query);
+
+
+        }
+        appendSQLs(workbook, sqlList);
+
+        response.setContentType("application/vnd.ms-excel");
+
+
+        response.addHeader("Content-disposition", "attachment;filename=DataExport.xlsx");
+
+        workbook.write(response.getOutputStream());
+    }
+
+    private boolean appendSQLs(Workbook workbook, List<String> sqlList) throws APIException {
+
+        Sheet sheet = workbook.createSheet(SQL_SHEET_NAME);
+        int rowNum = 0, col = 0;
+        for (String sql : sqlList
+        ) {
+            XSSFRow sheetRow = (XSSFRow) sheet.createRow(rowNum++);
+
+            Cell cell = sheetRow.createCell(col);
+            cell.setCellValue(sql);
+
+        }
+        return true;
     }
 
     private boolean fillSheetWithData(Sheet workSheet, String query) throws APIException {
@@ -108,6 +217,10 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
                     col++;
                 }
             }
+
+            preparedStatement.close();
+            resultSet.close();
+            connection.close();
         } catch (SQLException e) {
             throw new APIException(500, e.getMessage());
 
@@ -143,8 +256,7 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         Context context = new InitialContext(new Hashtable<>());
 
-        log.info("Map:" + toMap(context));
-
+        log.info("Context :"+ context.getClass());
 //        try {
         dataSource = (javax.sql.DataSource) context.lookup("jdbc/local/DataSource-TRIRIGA-data");
         log.info("Found:" + "jdbc/local/Datasource-TRIRIGA-data");
@@ -164,32 +276,5 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 //        }
         return dataSource.getConnection();
 
-    }
-
-    public static Map toMap(Context ctx) throws NamingException {
-        String namespace = ctx instanceof InitialContext ? ctx.getNameInNamespace() : "";
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        log.info("> Listing namespace: " + namespace);
-        NamingEnumeration<NameClassPair> list = ctx.list(namespace);
-        while (list.hasMoreElements()) {
-            NameClassPair next = list.next();
-            String name = next.getName();
-            String jndiPath = namespace + name;
-            Object lookup;
-            try {
-                log.info("> Looking up name: " + jndiPath);
-                Object tmp = ctx.lookup(jndiPath);
-                if (tmp instanceof Context) {
-                    lookup = toMap((Context) tmp);
-                } else {
-                    lookup = tmp.toString();
-                }
-            } catch (Throwable t) {
-                lookup = t.getMessage();
-            }
-            map.put(name, lookup);
-
-        }
-        return map;
     }
 }

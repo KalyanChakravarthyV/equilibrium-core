@@ -3,12 +3,12 @@ package in.vadlakonda.equilibrium.api;
 /*
  * For handling HTTP 50X, 40X and maybe 302 ?
  */
-public class APIException extends Exception{
+public class APIException extends Exception {
 
     private int statusCode;
     private String message;
 
-    APIException(int statusCode, String message){
+    APIException(int statusCode, String message) {
         this.setStatusCode(statusCode);
         this.setMessage(message);
     }
