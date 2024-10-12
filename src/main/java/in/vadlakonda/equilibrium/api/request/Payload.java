@@ -2,7 +2,7 @@ package in.vadlakonda.equilibrium.api.request;
 
 public class Payload {
 
-    private  String action;
+    private String action;
 
     //Support for Multi-part form data can make this redundant
     private String body;

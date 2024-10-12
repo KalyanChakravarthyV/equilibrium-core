@@ -7,11 +7,9 @@
 plugins {
     id 'java'
     id 'maven-publish'
-//    id "org.jetbrains.kotlin.jvm" version "1.6.21"
 }
-
-
-
+group = 'in.vadlakonda.equilibrium'
+version '1.0'
 
 configurations {
     triImplementation
@@ -19,7 +17,6 @@ configurations {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
@@ -42,53 +39,23 @@ dependencies {
     triImplementation 'commons-io:commons-io:2.11.0'
     triImplementation 'org.apache.poi:poi:5.2.2'
     triImplementation 'org.apache.poi:poi-ooxml:5.2.2'
-//    triImplementation 'it.firegloves:mempoi:version:1.8.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
     testImplementation 'javax.servlet:javax.servlet-api:3.1.0'
     testImplementation 'commons-io:commons-io:2.11.0'
     testImplementation 'org.apache.poi:poi:5.2.2'
     testImplementation 'org.apache.poi:poi-ooxml:5.2.2'
-//    testImplementation 'it.firegloves:mempoi:version:1.8.0'
-
-
     testImplementation 'log4j:log4j:1.2.16'
     testImplementation "org.mockito:mockito-core:1.+"
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.2'
 
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 
-
-
-    /*
-    implementation 'org.jetbrains.kotlin:kotlin-script-runtime:1.6.21'
-    implementation 'org.jetbrains.kotlin:kotlin-script-util:1.6.21'
-    runtimeOnly 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.21'
-
-    dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-script-runtime:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-script-util:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host-embeddable:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jsr223-embeddable:${rootProject.kotlinVersion}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jsr223:${rootProject.kotlinVersion}"
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    }
-
-     */
 }
 
 test {
     useJUnitPlatform()
 }
-
-
-
 
 
 task singleDependentJar(type: Jar) {
@@ -102,12 +69,24 @@ task singleDependentJar(type: Jar) {
 
     from { configurations.triImplementation.collect { it.isDirectory() ? it : zipTree(it) } }
 
-//    with jar
 }
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
 }
+
+repositories {
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/kalyanchakravarthyv/equilibrium-tri-husk")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GH_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
+        }
+    }
+}
+
+
 publishing {
     publications {
         maven(MavenPublication) {
@@ -124,9 +103,6 @@ publishing {
 }
 
 
-
-
-
 task printEnvironmentVariables {
 
     doFirst {
@@ -139,4 +115,4 @@ task printEnvironmentVariables {
 
 }
 
-//build.dependsOn printEnvironmentVariables
+testClasses.dependsOn singleDependentJar

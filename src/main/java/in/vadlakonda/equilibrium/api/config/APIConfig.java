@@ -1,7 +1,5 @@
 package in.vadlakonda.equilibrium.api.config;
 
-import in.vadlakonda.equilibrium.dispatch.config.Dispatcher;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import in.vadlakonda.equilibrium.api.config.API;
 import in.vadlakonda.equilibrium.api.config.APIConfig;
-import in.vadlakonda.equilibrium.dispatch.RequestDispatcher;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -19,11 +18,8 @@ public class EquilibriumAPIFactory {
 
     private static final Logger log = Logger.getLogger(EquilibriumAPIFactory.class);
     private static final String ERROR_RESPONSE = "ERROR_RESPONSE";
-
-    private static APIConfig apiConfig = null;
-
     private static final HashMap<String, EquilibriumAPI> API_OPERATION_MAP = new HashMap<String, EquilibriumAPI>();
-
+    private static APIConfig apiConfig = null;
     private static EquilibriumAPIFactory equilibriumAPIFactory = new EquilibriumAPIFactory();
 
     public static EquilibriumAPIFactory getEquilibriumAPIFactory(String apiConfigJsonFile, ClassLoader classLoader) {

@@ -9,13 +9,11 @@ import org.mockito.Mockito;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.Writer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 
 class CurrentTimeAPITest {
@@ -30,16 +28,16 @@ class CurrentTimeAPITest {
 
         when(request.getRequestURI()).thenReturn("/html/en/default/rest/Equilibrium/api/currentTimeAPI");
 
-        StringWriter out    = new StringWriter();
-        PrintWriter  writer = new PrintWriter(out);
+        StringWriter out = new StringWriter();
+        PrintWriter writer = new PrintWriter(out);
 
         when(response.getWriter()).thenReturn(writer);
 
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 
-        RequestDispatcher dispatcher =  RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json",currentClassLoader).getRequestDispatcher(request);
+        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", currentClassLoader).getRequestDispatcher(request);
 
-        dispatcher.dispatch(request,response,Thread.currentThread().getContextClassLoader());
+        dispatcher.dispatch(request, response, Thread.currentThread().getContextClassLoader());
 
 
         assertNotEquals(out.getBuffer().toString(), "");

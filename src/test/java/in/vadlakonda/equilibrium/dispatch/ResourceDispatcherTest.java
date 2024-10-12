@@ -3,21 +3,20 @@ package in.vadlakonda.equilibrium.dispatch;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,14 +29,14 @@ class ResourceDispatcherTest {
     @BeforeAll
     public static void setup() throws MalformedURLException {
 
-        File appRoot = new File("userfiles","ClassLoader/Equilibrium");
+        File appRoot = new File("userfiles", "ClassLoader/Equilibrium");
 
-        File jarRoot = new File(appRoot,"Java");
-        File webRoot = new File(appRoot,"Web");
+        File jarRoot = new File(appRoot, "Java");
+        File webRoot = new File(appRoot, "Web");
 
         List<URL> urlList = new ArrayList<URL>();
 
-        for(File f: jarRoot.listFiles()){
+        for (File f : jarRoot.listFiles()) {
             try {
                 urlList.add(f.toPath().toUri().toURL());
             } catch (MalformedURLException e) {
@@ -74,12 +73,10 @@ class ResourceDispatcherTest {
         when(response.getWriter()).thenReturn(writer);
 
 
-
-
-        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json",classLoader)
+        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", classLoader)
                 .getRequestDispatcher(request);
 
-        dispatcher.dispatch(request, response,classLoader);
+        dispatcher.dispatch(request, response, classLoader);
 
         log.info(out.getBuffer());
     }

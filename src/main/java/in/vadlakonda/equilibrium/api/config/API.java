@@ -1,7 +1,6 @@
 package in.vadlakonda.equilibrium.api.config;
 
 import in.vadlakonda.equilibrium.api.EquilibriumAPI;
-import in.vadlakonda.equilibrium.dispatch.RequestDispatcher;
 
 public class API {
 

@@ -9,9 +9,8 @@
     {
       "resourceURI": "api/.*",
       "dispatcher": "in.vadlakonda.equilibrium.dispatch.APIDispatcher",
-      "configFile" : "api-config.json"
+      "configFile": "api-config.json"
     },
-
     {
       "resourceURI": "ERROR_RESPONSE",
       "dispatcher": "in.vadlakonda.equilibrium.dispatch.ErrorResponseDispatcher"
