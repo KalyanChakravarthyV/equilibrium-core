@@ -4,6 +4,8 @@ import org.apache.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,21 +31,24 @@ class ResourceDispatcherTest {
     @BeforeAll
     public static void setup() throws MalformedURLException {
 
-        File appRoot = new File("userfiles", "ClassLoader/Equilibrium");
+        File appRoot = new File("build/resources/test", "userfiles/ClassLoader/Equilibrium");
 
         File jarRoot = new File(appRoot, "Java");
         File webRoot = new File(appRoot, "Web");
 
         List<URL> urlList = new ArrayList<URL>();
 
-        for (File f : jarRoot.listFiles()) {
-            try {
-                urlList.add(f.toPath().toUri().toURL());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
 
+        if (jarRoot.isDirectory())
+            for (File f : jarRoot.listFiles()) {
+                try {
+                    urlList.add(f.toPath().toUri().toURL());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        log.info("webRoot.listFiles()"+webRoot.listFiles());
         urlList.add(webRoot.toPath().toUri().toURL());
 
 
@@ -64,7 +69,7 @@ class ResourceDispatcherTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(request.getRequestURI()).thenReturn("/html/en/default/rest/Equilibrium/resource/dashboard/");
+        when(request.getRequestURI()).thenReturn("/html/en/default/rest/Equilibrium/resource/dashboard/index.html");
 
 
         StringWriter out = new StringWriter();
@@ -73,8 +78,10 @@ class ResourceDispatcherTest {
         when(response.getWriter()).thenReturn(writer);
 
 
-        RequestDispatcher dispatcher = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", classLoader)
-                .getRequestDispatcher(request);
+        RequestDispatcherFactory requestDispatcherFactory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", classLoader);
+        assertNotNull(requestDispatcherFactory);
+        RequestDispatcher dispatcher = requestDispatcherFactory.getRequestDispatcher(request);
+        assertNotNull(dispatcher);
 
         dispatcher.dispatch(request, response, classLoader);
 

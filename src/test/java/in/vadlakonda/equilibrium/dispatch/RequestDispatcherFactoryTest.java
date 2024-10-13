@@ -68,4 +68,16 @@ class RequestDispatcherFactoryTest {
         assertEquals(factory.getRequestDispatcher(request).getClass(), ErrorResponseDispatcher.class);
     }
 
+
+    @Order(4)
+    @ParameterizedTest
+    @ValueSource(strings = { "/html/en/default/rest/Equilibrium/resource/dashboard/index.html"})
+    void getResourceDispatcher(String uri) {
+
+        log.info("Testing against:" + uri);
+        assertNotNull(this.factory);
+        when(request.getRequestURI()).thenReturn(uri);
+
+        assertEquals(factory.getRequestDispatcher(request).getClass(), ResourceDispatcher.class);
+    }
 }

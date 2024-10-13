@@ -5,11 +5,13 @@
  * Learn more about Gradle by exploring our samples at https://docs.gradle.org/7.4/samples
  */
 plugins {
-    id 'java'
+    id 'application'
     id 'maven-publish'
 }
 group = 'in.vadlakonda.equilibrium'
 version '1.0'
+
+
 
 configurations {
     triImplementation
@@ -53,7 +55,16 @@ dependencies {
 
 }
 
+
+task copyTestResources(type: Copy) {
+    from "${projectDir}/src/test/resources"
+    into "${buildDir}/classes/test"
+}
+//processTestResources.dependsOn copyTestResources
+
+
 test {
+
     useJUnitPlatform()
 }
 
@@ -74,6 +85,7 @@ task singleDependentJar(type: Jar) {
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
 }
+
 
 repositories {
     maven {
