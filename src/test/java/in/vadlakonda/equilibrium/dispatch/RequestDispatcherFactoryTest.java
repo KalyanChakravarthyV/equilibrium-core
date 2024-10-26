@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -20,6 +22,7 @@ class RequestDispatcherFactoryTest {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(RequestDispatcherFactoryTest.class);
 
+    private static final File APP_ROOT = new File("./test/resource/");
     //    @Mock
     private static HttpServletRequest request;
 
@@ -39,13 +42,13 @@ class RequestDispatcherFactoryTest {
 
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 
-        assertNotNull((this.factory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", currentClassLoader)));
+        assertNotNull((this.factory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", currentClassLoader, APP_ROOT)));
     }
 
     @Order(2)
     @ParameterizedTest
-    @ValueSource(strings = {"/html/en/default/rest/Equilibrium/api/dataExport", "/html/en/default/rest/Equilibrium/api/runKts",
-            "/html/en/default/rest/Equilibrium/api/processBuilder", "/html/en/default/rest/Equilibrium/api/currentTime"})
+    @ValueSource(strings = {"/html/en/default/rest/Equilibrium/api/dataExport", "/html/en/default/rest/Equilibrium/api/runKts","/html/en/default/rest/Equilibrium/api/finder",
+            "/html/en/default/rest/Equilibrium/api/shell", "/html/en/default/rest/Equilibrium/api/currentTime"})
     void getAPIRequestDispatcher(String uri) {
 
         assertNotNull(this.factory);
@@ -71,13 +74,13 @@ class RequestDispatcherFactoryTest {
 
     @Order(4)
     @ParameterizedTest
-    @ValueSource(strings = { "/html/en/default/rest/Equilibrium/resource/dashboard/index.html"})
+    @ValueSource(strings = {"/html/en/default/rest/Equilibrium/app/","/html/en/default/rest/Equilibrium/app/manifest.json"})
     void getResourceDispatcher(String uri) {
 
         log.info("Testing against:" + uri);
         assertNotNull(this.factory);
         when(request.getRequestURI()).thenReturn(uri);
 
-        assertEquals(factory.getRequestDispatcher(request).getClass(), ResourceDispatcher.class);
+        assertEquals(ResourceDispatcher.class,factory.getRequestDispatcher(request).getClass());
     }
 }

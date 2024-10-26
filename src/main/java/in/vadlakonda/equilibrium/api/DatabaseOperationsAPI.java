@@ -1,6 +1,5 @@
 package in.vadlakonda.equilibrium.api;
 
-import com.google.gson.Gson;
 import in.vadlakonda.equilibrium.api.request.Payload;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
@@ -10,12 +9,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.naming.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-public class DatabaseOperationsAPI implements EquilibriumAPI {
+public class DatabaseOperationsAPI extends AbstractAPI {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(DatabaseOperationsAPI.class);
     private static final String SQL_SHEET_NAME = "SQL Queries";
@@ -31,7 +29,7 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
             String jndiPath = namespace + name;
             Object lookup;
             try {
-                log.info("> Looking up name: " + jndiPath);
+                log.debug("Looking up name: " + jndiPath);
                 Object tmp = ctx.lookup(jndiPath);
                 if (tmp instanceof Context) {
                     lookup = toMap((Context) tmp);
@@ -48,44 +46,27 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
     }
 
     @Override
-    public void execute(HttpServletRequest request, HttpServletResponse response, ClassLoader classLoader) throws APIException {
+    public void execute(HttpServletRequest request, HttpServletResponse response, ClassLoader classLoader) throws APIException, IOException {
 
 
-        BufferedReader bufferedReader = null;
-        Payload payload = null;
+        this.initializeAndValidate(request, response);
+
         try {
-            BufferedReader reader = request.getReader();
-            if (reader != null) {
-                Gson gson = new Gson();
-
-                payload = gson.fromJson(reader, Payload.class);
-
-
-            } else {
-                //reader is null
-                throw new APIException(400, "Request body cannot be empty");
-            }
-
-            if (payload == null) {
-                throw new APIException(400, "Request body(payload) cannot be empty");
-            }
-
-            if (payload.getAction().equals("dbExport")) {
+            if (payload.getAction().equals("export")) {
                 dbExport(payload, response);
-            } else if (payload.getAction().equals("dbUpdate")) {
+            } else if (payload.getAction().equals("update")) {
                 dbUpdate(payload, response);
-
             }
-
         } catch (Exception e) {
             log.error("Error occurred", e);
             throw new APIException(500, e.getMessage());
-
         }
 
     }
 
     private void dbUpdate(Payload payload, HttpServletResponse response) throws IOException, SQLException, NamingException {
+
+        log.info("Executing Updates");
         String queryBody = payload.getBody();
 
         response.setContentType("application/json");
@@ -96,12 +77,21 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         while (queryTokenizer.hasMoreTokens()) {
             String nextToken = queryTokenizer.nextToken();
+            log.debug("SQL Update->" + nextToken);
 
             StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
 
-            String queryName = queryNameTokenizer.nextToken();
+            String queryName = "q1";
 
-            String query = queryNameTokenizer.nextToken();
+            if(queryNameTokenizer.hasMoreTokens())
+                queryName = queryNameTokenizer.nextToken();
+
+            String query = "SELECT '' FROM DUAL";
+
+            if(queryNameTokenizer.hasMoreTokens())
+                query = queryNameTokenizer.nextToken();
+
+
 
             String sqlResult = "";
 
@@ -125,11 +115,14 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         }
 
+
         response.getWriter().println(String.format("{\"result\":[%s]}", responsetoPrint));
 
     }
 
     private void dbExport(Payload payload, HttpServletResponse response) throws IOException, APIException {
+
+        log.info("Executing Export");
 
         String queryBody = payload.getBody();
 
@@ -141,19 +134,31 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         List<String> sqlList = new LinkedList<String>();
 
+        int queryCounter = 0;
+
         while (queryTokenizer.hasMoreTokens()) {
             String nextToken = queryTokenizer.nextToken();
+            log.debug("SQL Export->" + nextToken);
 
-            StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
+            String queryName = "q"+queryCounter++;
+            String query = "SELECT '' FROM DUAL";
 
-            String queryName = queryNameTokenizer.nextToken();
+            if(nextToken.contains(":")) {
+                StringTokenizer queryNameTokenizer = new StringTokenizer(nextToken, ":");
 
-            String query = queryNameTokenizer.nextToken();
+                if (queryNameTokenizer.hasMoreTokens())
+                    queryName = queryNameTokenizer.nextToken();
 
-            sqlList.add(nextToken);
+                if (queryNameTokenizer.hasMoreTokens())
+                    query = queryNameTokenizer.nextToken();
+            }else
+                query = nextToken;
 
-            log.info("SQL->"+nextToken);
 
+            sqlList.add(queryName+':'+query);
+
+
+            log.info(queryName+':'+query);
             Sheet sheet = workbook.createSheet(queryName);
 
             fillSheetWithData(sheet, query);
@@ -196,16 +201,16 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
             connection = getConnection();
 
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-
             preparedStatement.executeQuery();
 
             resultSet = preparedStatement.getResultSet();
-
             resultSetMetaData = resultSet.getMetaData();
 
             fillSheetWithHeader(workSheet, resultSetMetaData);
 
             int rowNum = 1, col = 0, colCount = resultSetMetaData.getColumnCount();
+
+            log.debug("Excel Export Initiating");
 
             while (resultSet.next()) {
                 XSSFRow sheetRow = (XSSFRow) workSheet.createRow(rowNum++);
@@ -221,15 +226,18 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
             preparedStatement.close();
             resultSet.close();
             connection.close();
-        } catch (SQLException e) {
-            throw new APIException(500, e.getMessage());
 
+        } catch (SQLException e) {
+            log.error("SQLException Occurred:", e);
+            throw new APIException(500, e.getMessage());
 
         } catch (NamingException e) {
             log.error("NamingException Occurred:", e);
 
             throw new APIException(500, e.getMessage());
         }
+
+        log.debug("Excel Sheet Populated");
 
 
         return resultSetMetaData != null;
@@ -256,7 +264,7 @@ public class DatabaseOperationsAPI implements EquilibriumAPI {
 
         Context context = new InitialContext(new Hashtable<>());
 
-        log.info("Context :"+ context.getClass());
+        log.info("Context :" + context.getClass());
 //        try {
         dataSource = (javax.sql.DataSource) context.lookup("jdbc/local/DataSource-TRIRIGA-data");
         log.info("Found:" + "jdbc/local/Datasource-TRIRIGA-data");

@@ -25,7 +25,7 @@ dependencies {
 
 
     //This is compile-time dependency only, the implementation jar will be available on the server
-    compileOnly 'in.vadlakonda.equilibrium:tri-husk:1.0'
+//    compileOnly 'in.vadlakonda.equilibriumm:tri-husk:1.0'
     compileOnly 'log4j:log4j:1.2.16'
     compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
     compileOnly 'commons-io:commons-io:2.11.0'
@@ -54,13 +54,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 
 }
-
-
-task copyTestResources(type: Copy) {
-    from "${projectDir}/src/test/resources"
-    into "${buildDir}/classes/test"
-}
-//processTestResources.dependsOn copyTestResources
 
 
 test {
@@ -100,6 +93,17 @@ repositories {
 
 
 publishing {
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/kalyanchakravarthyv/equilibrium-core")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GH_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
+            }
+        }
+    }
     publications {
         maven(MavenPublication) {
             groupId = 'in.vadlakonda.equilibrium'
@@ -113,7 +117,6 @@ publishing {
         }
     }
 }
-
 
 task printEnvironmentVariables {
 

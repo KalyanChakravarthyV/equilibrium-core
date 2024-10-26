@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class ProcessBuilderAPI extends AbstractAPI {
-    private static final org.apache.log4j.Logger log = Logger.getLogger(ProcessBuilderAPI.class);
+public class ScriptEngineAPI extends AbstractAPI {
+    private static final Logger log = Logger.getLogger(ScriptEngineAPI.class);
 
 
     @Override
@@ -17,10 +17,12 @@ public class ProcessBuilderAPI extends AbstractAPI {
         this.initializeAndValidate(request, response);
 
         //payload is read from the request
-        executeProcess(this.payload, response);
+        executeScript(this.payload, response);
 
     }
 
-    private void executeProcess(Payload payload, HttpServletResponse response) {
+    private void executeScript(Payload payload, HttpServletResponse response) {
+
+
     }
 }

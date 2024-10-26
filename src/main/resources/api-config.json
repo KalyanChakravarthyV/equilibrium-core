@@ -2,8 +2,12 @@
   "baseURI": "/html/en/default/rest/Equilibrium/api/",
   "apis": [
     {
-      "apiOperation": "explorer",
-      "apiClass": "in.vadlakonda.equilibrium.api.CurrentTimeAPI"
+      "apiOperation": "finder",
+      "apiClass": "in.vadlakonda.equilibrium.api.FinderAPI"
+    },
+    {
+      "apiOperation": "runScript",
+      "apiClass": "in.vadlakonda.equilibrium.api.ScriptEngineAPI"
     },
     {
       "apiOperation": "dataExport",
@@ -12,6 +16,10 @@
     {
       "apiOperation": "currentTime",
       "apiClass": "in.vadlakonda.equilibrium.api.CurrentTimeAPI"
+    },
+    {
+      "apiOperation": "shell",
+      "apiClass": "in.vadlakonda.equilibrium.api.ProcessBuilderAPI"
     }
   ]
 }

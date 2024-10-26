@@ -3,7 +3,9 @@ package in.vadlakonda.equilibrium.dispatch;
 import in.vadlakonda.equilibrium.dispatch.config.Dispatcher;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,10 +18,16 @@ public class ResourceDispatcher implements RequestDispatcher {
 
     private Dispatcher dispatcher;
 
+    private static final MimetypesFileTypeMap MIMETYPES_FILE_TYPE_MAP = new MimetypesFileTypeMap();
+    private static final org.apache.log4j.Logger log = Logger.getLogger(ResourceDispatcher.class);
+
     public ResourceDispatcher(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
+    public static MimetypesFileTypeMap getMimeTypeMap(){
+        return  MIMETYPES_FILE_TYPE_MAP;
+    }
     @Override
     public void dispatch(HttpServletRequest request, HttpServletResponse response, ClassLoader classLoader) throws ServletException, IOException {
 
@@ -30,8 +38,13 @@ public class ResourceDispatcher implements RequestDispatcher {
         String resourceRoot = dispatcher.getResourceRoot();
         resourceURI = StringUtils.substringAfter(resourceURI, resourceRoot);
 
+        String resourcePath = resourceRoot + File.separator + resourceURI;
 
-        InputStream inputStream = classLoader.getResourceAsStream(resourceRoot + File.separator + resourceURI);
+        InputStream inputStream = classLoader.getResourceAsStream(resourcePath);
+
+
+        response.setContentType(MIMETYPES_FILE_TYPE_MAP.getContentType(resourcePath));
+        log.debug("Serving:"+resourcePath+" as "+MIMETYPES_FILE_TYPE_MAP.getContentType(resourcePath));
 
         IOUtils.copy(inputStream, response.getWriter(), StandardCharsets.UTF_8);
 

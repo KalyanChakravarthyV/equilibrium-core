@@ -8,10 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -24,12 +21,15 @@ public class RequestDispatcherFactory {
     private static DispatcherConfig dispatcherConfig = null;
     private static RequestDispatcherFactory requestDispatcherFactory = new RequestDispatcherFactory();
 
-
-    public static RequestDispatcherFactory getRequestDispatcherFactory(String dispatchConfigJsonFile, ClassLoader classLoader) {
+    //To be initialized the by the caller
+    public static File APP_ROOT = null;
+    public static RequestDispatcherFactory getRequestDispatcherFactory(String dispatchConfigJsonFile, ClassLoader classLoader, File appRoot) {
 
         if (dispatcherConfig != null && !dispatcherConfig.getDispatchers().isEmpty()) return requestDispatcherFactory;
 
         log.info("Initializing DispatcherConfig");
+        APP_ROOT = appRoot;
+        log.debug("App root:"+APP_ROOT.getAbsolutePath());
         Gson gson = new Gson();
 
         Reader reader = null;

@@ -3,8 +3,8 @@ package in.vadlakonda.equilibrium.dispatch;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +19,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +49,7 @@ class ResourceDispatcherTest {
                 }
             }
 
-        log.info("webRoot.listFiles()"+webRoot.listFiles());
+        log.info("webRoot.listFiles()" + webRoot.listFiles());
         urlList.add(webRoot.toPath().toUri().toURL());
 
 
@@ -64,12 +65,13 @@ class ResourceDispatcherTest {
         classLoader = new URLClassLoader(urlList.toArray(new URL[]{}));
     }
 
-    @Test
-    public void testResource() throws ServletException, IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"/html/en/default/rest/Equilibrium/app/main/index.html", "/html/en/default/rest/Equilibrium/app/main/manifest.json"})
+    public void testResource(String resourcePath) throws ServletException, IOException {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(request.getRequestURI()).thenReturn("/html/en/default/rest/Equilibrium/resource/dashboard/index.html");
+        when(request.getRequestURI()).thenReturn(resourcePath);
 
 
         StringWriter out = new StringWriter();
@@ -78,7 +80,7 @@ class ResourceDispatcherTest {
         when(response.getWriter()).thenReturn(writer);
 
 
-        RequestDispatcherFactory requestDispatcherFactory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", classLoader);
+        RequestDispatcherFactory requestDispatcherFactory = RequestDispatcherFactory.getRequestDispatcherFactory("dispatcher-config.json", classLoader, new File("./test/resource/"));
         assertNotNull(requestDispatcherFactory);
         RequestDispatcher dispatcher = requestDispatcherFactory.getRequestDispatcher(request);
         assertNotNull(dispatcher);

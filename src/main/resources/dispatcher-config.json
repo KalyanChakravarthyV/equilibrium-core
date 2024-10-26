@@ -2,9 +2,9 @@
   "baseURI": "/html/en/default/rest/Equilibrium/",
   "dispatchers": [
     {
-      "resourceURI": "resource/.*",
+      "resourceURI": "app/.*",
       "dispatcher": "in.vadlakonda.equilibrium.dispatch.ResourceDispatcher",
-      "resourceRoot": "dashboard/"
+      "resourceRoot": "main/"
     },
     {
       "resourceURI": "api/.*",

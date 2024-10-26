@@ -78,7 +78,7 @@ public class EquilibriumAPIFactory {
 
         String matchedResourceURI = API_OPERATION_MAP.keySet().stream().filter(e -> operationURI.startsWith(e)).findFirst().orElse(ERROR_RESPONSE);
 
-        log.info(String.format("Operation URI[%s] - Matches:%s", operationURI, matchedResourceURI));
+        log.debug(String.format("Operation URI[%s] - Matches:%s", operationURI, matchedResourceURI));
 
         if (matchedResourceURI == null)
             return API_OPERATION_MAP.get(ERROR_RESPONSE);
