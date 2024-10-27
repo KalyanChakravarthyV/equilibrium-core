@@ -80,16 +80,6 @@ task sourceJar(type: Jar) {
 }
 
 
-repositories {
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/kalyanchakravarthyv/equilibrium-tri-husk")
-        credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("GH_USERNAME")
-            password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
-        }
-    }
-}
 
 
 publishing {
