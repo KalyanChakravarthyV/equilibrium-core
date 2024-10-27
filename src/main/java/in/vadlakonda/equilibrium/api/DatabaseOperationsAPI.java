@@ -154,9 +154,9 @@ public class DatabaseOperationsAPI extends AbstractAPI {
             }else
                 query = nextToken;
 
+            if(query.trim().isEmpty()) continue;
 
             sqlList.add(queryName+':'+query);
-
 
             log.info(queryName+':'+query);
             Sheet sheet = workbook.createSheet(queryName);

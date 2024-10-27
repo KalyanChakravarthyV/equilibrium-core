@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ResourceDispatcher implements RequestDispatcher {
 
+    private static final String INDEX_HTML = "index.html";
     private Dispatcher dispatcher;
 
     private static final MimetypesFileTypeMap MIMETYPES_FILE_TYPE_MAP = new MimetypesFileTypeMap();
@@ -40,6 +41,14 @@ public class ResourceDispatcher implements RequestDispatcher {
 
         String resourcePath = resourceRoot + File.separator + resourceURI;
 
+        //TODO Fix this bug
+        if(resourcePath.endsWith("/") || resourcePath.endsWith("/sql")
+                || resourcePath.endsWith("/finder")
+                || resourcePath.endsWith("/script")){
+            resourcePath += INDEX_HTML;
+            log.debug("Redirecting to:"+resourcePath);
+
+        }
         InputStream inputStream = classLoader.getResourceAsStream(resourcePath);
 
 

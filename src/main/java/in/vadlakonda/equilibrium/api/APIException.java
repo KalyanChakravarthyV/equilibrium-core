@@ -8,7 +8,7 @@ public class APIException extends Exception {
     private int statusCode;
     private String message;
 
-    APIException(int statusCode, String message) {
+    public APIException(int statusCode, String message) {
         this.setStatusCode(statusCode);
         this.setMessage(message);
     }

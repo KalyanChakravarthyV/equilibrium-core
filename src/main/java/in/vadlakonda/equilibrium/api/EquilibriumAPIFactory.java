@@ -85,4 +85,8 @@ public class EquilibriumAPIFactory {
 
         return API_OPERATION_MAP.get(matchedResourceURI);
     }
+
+    public APIConfig getAPIConfig(){
+        return apiConfig;
+    }
 }
